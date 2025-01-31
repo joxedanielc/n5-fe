@@ -11,3 +11,7 @@ export const modifyPermission = async (id, data) => {
 export const getPermissions = async () => {
   return await apiClient.get("/permisos");
 };
+
+export const getPermissionTypes = async () => {
+  return await apiClient.get("/permisos/permissionTypes");
+};

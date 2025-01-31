@@ -1,6 +1,19 @@
-import { useState } from "react";
-import { TextField, Button, Container, Typography, Box } from "@mui/material";
-import { requestPermission } from "../api/permissionApi";
+import { useState, useEffect } from "react";
+import * as React from "react";
+import {
+  TextField,
+  Button,
+  Container,
+  Typography,
+  Box,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+import { requestPermission, getPermissionTypes } from "../api/permissionApi";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const PermissionForm = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +23,22 @@ const PermissionForm = () => {
     fechaPermiso: "",
   });
 
+  const [permissionTypes, setPermissionTypes] = useState([]);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [successSnackbar, setSuccessSnackbar] = useState(true);
+
+  useEffect(() => {
+    const fetchPermissionTypes = async () => {
+      try {
+        const response = await getPermissionTypes();
+        setPermissionTypes(response.data);
+      } catch (error) {
+        console.error("Error fetching permission types", error);
+      }
+    };
+    fetchPermissionTypes();
+  }, []);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -18,7 +47,7 @@ const PermissionForm = () => {
     e.preventDefault();
     try {
       await requestPermission(formData);
-      alert("Permission Requested Successfully!");
+      setSuccessSnackbar(true);
       setFormData({
         nombreEmpleado: "",
         apellidoEmpleado: "",
@@ -27,8 +56,18 @@ const PermissionForm = () => {
       });
     } catch (error) {
       console.error("Error requesting permission", error);
-      alert("Failed to request permission");
+      setSuccessSnackbar(false);
+    } finally {
+      setOpenSnackbar(true);
     }
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenSnackbar(false);
   };
 
   return (
@@ -56,15 +95,25 @@ const PermissionForm = () => {
             margin="normal"
             required
           />
-          <TextField
-            fullWidth
-            label="Permission Type"
-            name="tipoPermiso"
-            value={formData.tipoPermiso}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
+          <FormControl fullWidth variant="standard" margin="normal">
+            <InputLabel id="permission-type-select-label">
+              Permission Type
+            </InputLabel>
+            <Select
+              labelId="permission-type-select-label"
+              id="permission-type-select"
+              name="tipoPermiso"
+              value={formData.tipoPermiso}
+              onChange={handleChange}
+              required
+            >
+              {permissionTypes.map((type) => (
+                <MenuItem key={type.id} value={type.id}>
+                  {type.descripcion}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             fullWidth
             name="fechaPermiso"
@@ -85,6 +134,22 @@ const PermissionForm = () => {
           </Button>
         </form>
       </Box>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert
+          onClose={handleClose}
+          severity={successSnackbar ? "success" : "error"}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {successSnackbar
+            ? "Permission Requested Successfully!"
+            : "Failed to request permission"}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

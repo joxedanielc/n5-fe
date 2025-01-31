@@ -11,21 +11,46 @@ import {
   InputLabel,
   FormControl,
 } from "@mui/material";
-import { requestPermission, getPermissionTypes } from "../api/permissionApi";
+import {
+  requestPermission,
+  getPermissionTypes,
+  modifyPermission,
+} from "../api/permissionApi";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import Link from "@mui/material/Link";
+import HomeIcon from "@mui/icons-material/Home";
+import CreateIcon from "@mui/icons-material/Create";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import dayjs from "dayjs";
 
 const PermissionForm = () => {
-  const [formData, setFormData] = useState({
-    nombreEmpleado: "",
-    apellidoEmpleado: "",
-    tipoPermiso: "",
-    fechaPermiso: "",
-  });
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  const [formData, setFormData] = useState(
+    location.state
+      ? {
+          ...location.state,
+          fechaPermiso: location.state.fechaPermiso
+            ? dayjs(location.state.fechaPermiso).format("YYYY-MM-DD") // ✅ Fix date format
+            : "",
+        }
+      : {
+          nombreEmpleado: "",
+          apellidoEmpleado: "",
+          tipoPermiso: "",
+          fechaPermiso: "",
+        }
+  );
+  console.log(formData);
   const [permissionTypes, setPermissionTypes] = useState([]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [successSnackbar, setSuccessSnackbar] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [isEditMode, setIsEditMode] = useState(!!id);
 
   useEffect(() => {
     const fetchPermissionTypes = async () => {
@@ -46,14 +71,12 @@ const PermissionForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await requestPermission(formData);
+      if (isEditMode) {
+        await modifyPermission(id, formData);
+      } else {
+        await requestPermission(formData);
+      }
       setSuccessSnackbar(true);
-      setFormData({
-        nombreEmpleado: "",
-        apellidoEmpleado: "",
-        tipoPermiso: "",
-        fechaPermiso: "",
-      });
     } catch (error) {
       console.error("Error requesting permission", error);
       setSuccessSnackbar(false);
@@ -70,11 +93,40 @@ const PermissionForm = () => {
     setOpenSnackbar(false);
   };
 
+  function handleClick(event) {
+    event.preventDefault();
+    navigate("/");
+  }
+
   return (
     <Container maxWidth="sm">
-      <Box sx={{ p: 3, boxShadow: 3, borderRadius: 2, mt: 5 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", my: 2 }}>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link
+            underline="hover"
+            sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+            color="inherit"
+            onClick={handleClick}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Home
+          </Link>
+          <Typography
+            sx={{
+              color: "text.primary",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <CreateIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            {isEditMode ? "Edit" : "Create"}
+          </Typography>
+        </Breadcrumbs>
+      </Box>
+
+      <Box sx={{ p: 3, boxShadow: 3, borderRadius: 2 }}>
         <Typography variant="h5" gutterBottom>
-          Request Permission
+          {isEditMode ? "Edit Permission" : "Request Permission"}
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
@@ -122,6 +174,7 @@ const PermissionForm = () => {
             onChange={handleChange}
             margin="normal"
             required
+            disabled={isEditMode}
           />
           <Button
             type="submit"
@@ -130,7 +183,7 @@ const PermissionForm = () => {
             fullWidth
             sx={{ mt: 2 }}
           >
-            Submit
+            {isEditMode ? "Update" : "Submit"}
           </Button>
         </form>
       </Box>

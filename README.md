@@ -12,8 +12,8 @@ This project is a **React-based frontend application** designed to interact with
 
 To set up and run this project, ensure that you have installed:
 
-- **Node.js** (Latest LTS version recommended)
-- **npm**
+- **Node.js** (v18.17.1)
+- **npm** (v9.6.7)
 
 ### **Installation Steps**
 
@@ -39,11 +39,9 @@ This will start a local development **[http://localhost:3000](http://localhost:3
 
 These are the commands are available:
 
-| Command         | Description                                       |
-| --------------- | ------------------------------------------------- |
-| `npm start`     | Launches the application in development mode.     |
-| `npm run build` | Generates a production-ready build.               |
-| `npm run lint`  | Executes ESLint to check for code quality issues. |
+| Command     | Description                                   |
+| ----------- | --------------------------------------------- |
+| `npm start` | Launches the application in development mode. |
 
 ## **🛠 Project Structure**
 

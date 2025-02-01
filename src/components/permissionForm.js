@@ -45,10 +45,11 @@ const PermissionForm = () => {
           fechaPermiso: "",
         }
   );
-  console.log(formData);
+
   const [permissionTypes, setPermissionTypes] = useState([]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [successSnackbar, setSuccessSnackbar] = useState(true);
+  const [requestMessage, setRequestMessage] = useState("");
   // eslint-disable-next-line no-unused-vars
   const [isEditMode, setIsEditMode] = useState(!!id);
 
@@ -73,13 +74,16 @@ const PermissionForm = () => {
     try {
       if (isEditMode) {
         await modifyPermission(id, formData);
+        setRequestMessage("Permission Updated Successfully!");
       } else {
         await requestPermission(formData);
+        setRequestMessage("Permission Requested Successfully!");
       }
       setSuccessSnackbar(true);
     } catch (error) {
       console.error("Error requesting permission", error);
       setSuccessSnackbar(false);
+      setRequestMessage("Failed to request permission");
     } finally {
       setOpenSnackbar(true);
     }
@@ -198,9 +202,7 @@ const PermissionForm = () => {
           variant="filled"
           sx={{ width: "100%" }}
         >
-          {successSnackbar
-            ? "Permission Requested Successfully!"
-            : "Failed to request permission"}
+          {requestMessage}
         </Alert>
       </Snackbar>
     </Container>
